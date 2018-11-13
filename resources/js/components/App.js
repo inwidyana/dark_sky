@@ -23,7 +23,7 @@ export default class App extends Component {
     }
 
     handleBlur() {
-        $('.dropdown-toggle').dropdown('toggle');
+        $('.dropdown-toggle').dropdown('hide');
     }
 
     doneTyping() {
@@ -50,16 +50,15 @@ export default class App extends Component {
 
     handleClick(event) {
         let placeId = event.target.id;
-
-        this.setState({currentCity: event.target.innerHTML});
+        this.setState({currentCity: event.target.innerHTML, currentSearch: event.target.innerHTML});
 
         axios.get('/api/location/' + placeId).then((response) => {
-            // console.log(response.data.result.geometry.location);
             let lat = response.data.result.geometry.location.lat;
             let lng = response.data.result.geometry.location.lng;
 
             axios.get('/api/forecast/' + lat + '/' + lng).then((response) => {
-                this.setState({forecast: response.currently});
+                this.setState({forecast: response.data.currently});
+                $('.dropdown-toggle').dropdown('hide');
             });
         });
     }
@@ -71,16 +70,17 @@ export default class App extends Component {
 
         let card;
 
-        if(this.state.currentCity !== '') {
+        if(this.state.forecast.summary) {
             card = (
-                <div className="row justify-content-center">
+                <div className="row justify-content-center mb-5">
                     <div className="card">
-                        <div className="card-body">
+                        <div className="card-header">
                             <h5 className="card-title">{ this.state.currentCity }</h5>
-                            <p className="card-text">{this.state.forecast.summary}</p>
-                            <p className="card-text">{this.state.forecast.temperature}</p>
-                            <p className="card-text">{this.state.forecast.humidity}</p>
-                            <a href="#" className="btn btn-primary">Go somewhere</a>
+                        </div>
+                        <div className="card-body">
+                            <p style={{fontSize: '0.3em'}}>{ this.state.forecast.summary }</p>
+                            <p style={{fontSize: '0.3em'}}>{ this.state.forecast.temperature }</p>
+                            <p style={{fontSize: '0.3em'}}>{ this.state.forecast.humidity }</p>
                         </div>  
                     </div>
                 </div>
@@ -89,6 +89,12 @@ export default class App extends Component {
 
         return (
             <div className="container">
+                <div className="row justify-content-center">
+                    <h5>
+                        Due to google policy as of the writting of this text(13th November 2018) regarding account with no billing information. 
+                        This application could only display the weather info for one city because google limit Place API to one request per day :(.
+                    </h5>
+                </div>
                 {card}
                 <div className="row justify-content-center">
                     <div className="col-md-8">
